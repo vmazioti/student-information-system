@@ -102,14 +102,18 @@ def login():
     # Έλεγχος δεδομένων username / password
     # Αν η αυθεντικοποίηση είναι επιτυχής.
     # Να συμπληρώσετε το if statement.
-    # if ... :
-    res = {"uuid": user_uuid, "username": data['username']}
-    return Response(json.dumps(res), mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
+    username_in_users = list(users.find({'username': data['username']})) #an den to vrw: 0
+    password_in_users = list(users.find({'username': username_in_users}, {'password': 1}))
 
+
+    if (username_in_users != 0) and (password_in_users == data['password']):
+        user_uuid = create_session(data['username'])
+        res = {"uuid": user_uuid, "username": data['username']}
+        return Response(json.dumps(res), status=200, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
     # Διαφορετικά, αν η αυθεντικοποίηση είναι ανεπιτυχής.
-    # else:
-    # Μήνυμα λάθους (Λάθος username ή password)
-    return Response("Wrong username or password.", mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
+    else:
+        # Μήνυμα λάθους (Λάθος username ή password)
+        return Response("Wrong username or password.", status=400, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
 
 
 # ΕΡΩΤΗΜΑ 3: Επιστροφή φοιτητή βάσει email
