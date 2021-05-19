@@ -99,14 +99,7 @@ def login():
         * Διαφορετικά, να επιστρέφεται μήνυμα λάθους με status code 400.
     """
 
-    # Έλεγχος δεδομένων username / password
-    # Αν η αυθεντικοποίηση είναι επιτυχής.
-    # Να συμπληρώσετε το if statement.
-    username_in_users = list(users.find({'username': data['username']})) #an den to vrw: 0
-    password_in_users = list(users.find({'username': username_in_users}, {'password': 1}))
-
-
-    if (username_in_users != 0) and (password_in_users == data['password']):
+    if (users.find({'username': data['username']}).count() != 0) and (users.find({'password': data['password']}).count() != 0):
         user_uuid = create_session(data['username'])
         res = {"uuid": user_uuid, "username": data['username']}
         return Response(json.dumps(res), status=200, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
