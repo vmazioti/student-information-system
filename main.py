@@ -113,10 +113,10 @@ def login():
 # ΕΡΩΤΗΜΑ 3: Επιστροφή φοιτητή βάσει email
 @app.route('/getStudent', methods=['GET'])
 def get_student():
-     #uuid = request.headers.get('authorization')
-    #if not is_session_valid(uuid):
-     #   return Response("User is not authenticated", status=401, mimetype='application/json')
-    # Request JSON data
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
+     #Request JSON data
 
     data = None
     try:
@@ -153,9 +153,9 @@ def get_student():
 # ΕΡΩΤΗΜΑ 4: Επιστροφή όλων των φοιτητών που είναι 30 ετών
 @app.route('/getStudents/thirties', methods=['GET'])
 def get_students_thirty():
-    #uuid = request.headers.get('authorization')
-    #if not is_session_valid(uuid):
-       #return Response("User is not authenticated", status=401, mimetype='application/json')
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+       return Response("User is not authenticated", status=401, mimetype='application/json')
     """
         Στα headers του request ο χρήστης θα πρέπει να περνάει το uuid το οποίο έχει λάβει κατά την είσοδό του στο σύστημα.
             Π.Χ: uuid = request.headers.get('authorization')
