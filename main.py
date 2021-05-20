@@ -183,6 +183,9 @@ def get_students_thirty():
 # ΕΡΩΤΗΜΑ 5: Επιστροφή όλων των φοιτητών που είναι τουλάχιστον 30 ετών
 @app.route('/getStudents/oldies', methods=['GET'])
 def get_students_oldies():
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
     """
         Στα headers του request ο χρήστης θα πρέπει να περνάει και το uuid το οποίο έχει λάβει κατά την είσοδό του στο σύστημα.
             Π.Χ: uuid = request.headers.get('authorization')
@@ -195,9 +198,12 @@ def get_students_oldies():
 
         Σε περίπτωση που δε βρεθεί κάποιος φοιτητής, να επιστρέφεται ανάλογο μήνυμα και όχι κενή λίστα.
     """
-
-    # Η παρακάτω εντολή χρησιμοποιείται μόνο σε περίπτωση επιτυχούς αναζήτησης φοιτητών (υπάρχουν φοιτητές που είναι τουλάχιστον 30 ετών).
-    return Response(json.dumps(students), status=200, mimetype='application/json')
+    students_old = list(students.find({'yearOfBirth': {"$lte": 1991}}))
+    if students_old:
+        serialized_students = list(map(serialize_student, students_old))
+        return Response(json.dumps(serialized_students), status=200, mimetype='application/json')
+    else:
+        return Response("Students not found", status=401, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 6: Επιστροφή φοιτητή που έχει δηλώσει κατοικία βάσει email
