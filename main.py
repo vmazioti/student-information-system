@@ -31,6 +31,10 @@ def create_session(username):
 def is_session_valid(user_uuid):
     return user_uuid in users_sessions
 
+def serialize_student(student):
+    student['_id'] = str(student['_id'])
+    return student
+
 
 # ΕΡΩΤΗΜΑ 1: Δημιουργία χρήστη
 @app.route('/createUser', methods=['POST'])
@@ -142,9 +146,8 @@ def get_student():
     """
     student = students.find_one({'email': data['email']})
     if student != None:
-        student['_id'] = str(student['_id'])
         # Η παρακάτω εντολή χρησιμοποιείται μόνο στη περίπτωση επιτυχούς αναζήτησης φοιτητών (δηλ. υπάρχει φοιτητής με αυτό το email).
-        return Response(json.dumps(student), status=200, mimetype='application/json')
+        return Response(json.dumps(serialize_student(student)), status=200, mimetype='application/json')
     else:
 
         return Response("Student not found", status=400, mimetype='application/json')
@@ -164,21 +167,17 @@ def get_students_thirty():
             * Αν η συνάρτηση επιστρέψει True, ο χρήστης έχει αυθεντικοποιηθεί.
 
         Το συγκεκριμένο endpoint θα πρέπει να επιστρέφει τη λίστα των φοιτητών οι οποίοι είναι 30 ετών.
-        ?Να περάσετε τα δεδομένα των φοιτητών σε μία λίστα που θα ονομάζεται students.
+        Να περάσετε τα δεδομένα των φοιτητών σε μία λίστα που θα ονομάζεται students.
 
         Σε περίπτωση που δε βρεθεί κάποιος φοιτητής, να επιστρέφεται ανάλογο μήνυμα και όχι κενή λίστα.
     """
 
-    if students.find({'yearOfBirth': {"$eq": 1991}}).count() != 0:
-        students_thirty = list[students.find({'yearOfBirth': {"$eq": 1991}})]
-        return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
+    students_thirty = list(students.find({'yearOfBirth': {"$eq": 1991}}))
+    if students_thirty:
+        serialized_students = list(map(serialize_student, students_thirty))
+        return Response(json.dumps(serialized_students), status=200, mimetype='application/json')
     else:
         return Response("Students not found", status=401, mimetype='application/json')
-
-
-
-    # Η παρακάτω εντολή χρησιμοποιείται μόνο σε περίπτωση επιτυχούς αναζήτησης φοιτητών (δηλ. υπάρχουν φοιτητές που είναι 30 ετών).
-    #return Response(json.dumps(students), status=200, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 5: Επιστροφή όλων των φοιτητών που είναι τουλάχιστον 30 ετών
