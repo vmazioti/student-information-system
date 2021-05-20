@@ -112,6 +112,9 @@ def login():
 # ΕΡΩΤΗΜΑ 3: Επιστροφή φοιτητή βάσει email
 @app.route('/getStudent', methods=['GET'])
 def get_student():
+     #uuid = request.headers.get('authorization')
+    #if not is_session_valid(uuid):
+     #   return Response("User is not authenticated", status=401, mimetype='application/json')
     # Request JSON data
     data = None
     try:
