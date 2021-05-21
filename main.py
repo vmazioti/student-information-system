@@ -5,7 +5,6 @@ import json
 import uuid
 import time
 
-
 # Connect to our local MongoDB
 client = MongoClient('mongodb://localhost:27017/')
 
@@ -31,9 +30,10 @@ def create_session(username):
 def is_session_valid(user_uuid):
     return user_uuid in users_sessions
 
-def serialize_student(student):
-    student['_id'] = str(student['_id'])
-    return student
+
+# def serialize_student(student):
+#     student['_id'] = str(student['_id'])
+#     return student
 
 
 # ΕΡΩΤΗΜΑ 1: Δημιουργία χρήστη
@@ -68,15 +68,17 @@ def create_user():
     # Αν δεν υπάρχει user με το username που έχει δοθεί.
     # Να συμπληρώσετε το if statement.
     username_from_request = data['username']
-    users_with_same_name_from_request = list(students.find({'username': username_from_request }))
-    if not users_with_same_name_from_request  :
-        users.insert_one({'username': username_from_request ,'password': data['password']})
+    users_with_same_name_from_request = list(students.find({'username': username_from_request}))
+    if not users_with_same_name_from_request:
+        users.insert_one({'username': username_from_request, 'password': data['password']})
         # Μήνυμα επιτυχίας
-        return Response(data['username'] + " was added to the MongoDB",status=200, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
+        return Response(data['username'] + " was added to the MongoDB", status=200,
+                        mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
     # Διαφορετικά, αν υπάρχει ήδη κάποιος χρήστης με αυτό το username.
     else:
         # Μήνυμα λάθους (Υπάρχει ήδη κάποιος χρήστης με αυτό το username)
-        return Response("A user with the given email already exists",status=500, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
+        return Response("A user with the given email already exists", status=500,
+                        mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
 
 
 # ΕΡΩΤΗΜΑ 2: Login στο σύστημα
@@ -104,7 +106,8 @@ def login():
         * Διαφορετικά, να επιστρέφεται μήνυμα λάθους με status code 400.
     """
 
-    if (users.find({'username': data['username']}).count() != 0) and (users.find({'password': data['password']}).count() != 0):
+    if (users.find({'username': data['username']}).count() != 0) and (
+            users.find({'password': data['password']}).count() != 0):
         user_uuid = create_session(data['username'])
         res = {"uuid": user_uuid, "username": data['username']}
         return Response(json.dumps(res), status=200, mimetype='application/json')  # ΠΡΟΣΘΗΚΗ STATUS
@@ -120,8 +123,8 @@ def get_student():
     uuid = request.headers.get('authorization')
     if not is_session_valid(uuid):
         return Response("User is not authenticated", status=401, mimetype='application/json')
-     #Request JSON data
 
+    #Request JSON data
     data = None
     try:
         data = json.loads(request.data)
@@ -144,12 +147,10 @@ def get_student():
 
         Σε περίπτωση που δε βρεθεί κάποιος φοιτητής, να επιστρέφεται ανάλογο μήνυμα.
     """
-    student = students.find_one({'email': data['email']})
-    if student != None:
-        # Η παρακάτω εντολή χρησιμοποιείται μόνο στη περίπτωση επιτυχούς αναζήτησης φοιτητών (δηλ. υπάρχει φοιτητής με αυτό το email).
-        return Response(json.dumps(serialize_student(student)), status=200, mimetype='application/json')
+    student = students.find_one({'email': data['email']}, {'_id': 0})
+    if student is not None:
+        return Response(json.dumps(student), status=200, mimetype='application/json')
     else:
-
         return Response("Student not found", status=400, mimetype='application/json')
 
 
@@ -158,7 +159,7 @@ def get_student():
 def get_students_thirty():
     uuid = request.headers.get('authorization')
     if not is_session_valid(uuid):
-       return Response("User is not authenticated", status=401, mimetype='application/json')
+        return Response("User is not authenticated", status=401, mimetype='application/json')
     """
         Στα headers του request ο χρήστης θα πρέπει να περνάει το uuid το οποίο έχει λάβει κατά την είσοδό του στο σύστημα.
             Π.Χ: uuid = request.headers.get('authorization')
@@ -172,10 +173,9 @@ def get_students_thirty():
         Σε περίπτωση που δε βρεθεί κάποιος φοιτητής, να επιστρέφεται ανάλογο μήνυμα και όχι κενή λίστα.
     """
 
-    students_thirty = list(students.find({'yearOfBirth': {"$eq": 1991}}))
+    students_thirty = list(students.find({'yearOfBirth': {"$eq": 1991}}, {'_id': 0}))
     if students_thirty:
-        serialized_students = list(map(serialize_student, students_thirty))
-        return Response(json.dumps(serialized_students), status=200, mimetype='application/json')
+        return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
     else:
         return Response("Students not found", status=401, mimetype='application/json')
 
@@ -198,10 +198,9 @@ def get_students_oldies():
 
         Σε περίπτωση που δε βρεθεί κάποιος φοιτητής, να επιστρέφεται ανάλογο μήνυμα και όχι κενή λίστα.
     """
-    students_old = list(students.find({'yearOfBirth': {"$lte": 1991}}))
-    if students_old:
-        serialized_students = list(map(serialize_student, students_old))
-        return Response(json.dumps(serialized_students), status=200, mimetype='application/json')
+    students_thirty = list(students.find({'yearOfBirth': {"$lte": 1991}}, {'_id': 0}))
+    if students_thirty:
+        return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
     else:
         return Response("Students not found", status=401, mimetype='application/json')
 
@@ -209,6 +208,10 @@ def get_students_oldies():
 # ΕΡΩΤΗΜΑ 6: Επιστροφή φοιτητή που έχει δηλώσει κατοικία βάσει email
 @app.route('/getStudentAddress', methods=['GET'])
 def get_student_address():
+    # uuid = request.headers.get('authorization')
+    # if not is_session_valid(uuid):
+    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+
     # Request JSON data
     data = None
     try:
@@ -235,9 +238,17 @@ def get_student_address():
         Το student{} να είναι της μορφής: 
         student = {"name": "Student's name", "street": "The street where the student lives", "postcode": 11111}
     """
+    if (students.find_one({'email': data['email']}) is None) or (
+            students.find_one({'email': data['email']}, {'address': 1}) is None):
+        return Response("Student or address not found", status=400, mimetype='application/json')
+    else:
+        student = students.find_one({'email': data['email']},
+                                    {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
+        return Response(json.dumps(student), status=200, mimetype='application/json')
 
     # Η παρακάτω εντολή χρησιμοποιείται μόνο σε περίπτωση επιτυχούς αναζήτησης φοιτητή (υπάρχει ο φοιτητής και έχει δηλωμένη κατοικία).
-    return Response(json.dumps(student), status=200, mimetype='application/json')
+    # return Response(json.dumps(student), status=200, mimetype='application/json')
+    # return Response(json.dumps(serialize_student(student)), status=200, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 7: Διαγραφή φοιτητή βάσει email
