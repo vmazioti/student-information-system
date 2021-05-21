@@ -238,8 +238,7 @@ def get_student_address():
         Το student{} να είναι της μορφής: 
         student = {"name": "Student's name", "street": "The street where the student lives", "postcode": 11111}
     """
-    if (students.find_one({'email': data['email']}) is None) or (
-            students.find_one({'email': data['email']}, {'address': 1}) is None):
+    if (students.find_one({'email': data['email']}) is None) or (students.find_one({"email": data['email']}, {'address': 1}) is None): #problem otan den yparxei to address key
         return Response("Student or address not found", status=400, mimetype='application/json')
     else:
         student = students.find_one({'email': data['email']},
@@ -254,6 +253,10 @@ def get_student_address():
 # ΕΡΩΤΗΜΑ 7: Διαγραφή φοιτητή βάσει email
 @app.route('/deleteStudent', methods=['DELETE'])
 def delete_student():
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
+
     # Request JSON data
     data = None
     try:
@@ -280,8 +283,14 @@ def delete_student():
         Αν βρεθεί ο φοιτητής και διαγραφεί, στο μήνυμα θα πρέπει να δηλώνεται και το όνομά του (πχ: msg = "Morton Fitzgerald was deleted.").
     """
 
-    return Response(msg, status=200, mimetype='application/json')
-
+    if students.find_one({'email': data['email']}):
+        student = students.find_one({'email': data['email']})
+        msg = (str(student['name']), " was deleted")
+        students.delete_one({'email': data['email']})
+        return Response(msg, status=200, mimetype='application/json')
+    else:
+        msg = "Student was not found"
+        return Response(msg, status=200, mimetype='application/json')
 
 # ΕΡΩΤΗΜΑ 8: Εισαγωγή μαθημάτων σε φοιτητή βάσει email
 @app.route('/addCourses', methods=['PATCH'])
