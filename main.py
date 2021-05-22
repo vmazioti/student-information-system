@@ -177,7 +177,7 @@ def get_students_thirty():
     if students_thirty:
         return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
     else:
-        return Response("Students not found", status=401, mimetype='application/json')
+        return Response("Students not found", status=400, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 5: Επιστροφή όλων των φοιτητών που είναι τουλάχιστον 30 ετών
@@ -202,7 +202,7 @@ def get_students_oldies():
     if students_thirty:
         return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
     else:
-        return Response("Students not found", status=401, mimetype='application/json')
+        return Response("Students not found", status=400, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 6: Επιστροφή φοιτητή που έχει δηλώσει κατοικία βάσει email
@@ -238,16 +238,20 @@ def get_student_address():
         Το student{} να είναι της μορφής: 
         student = {"name": "Student's name", "street": "The street where the student lives", "postcode": 11111}
     """
-    if (students.find_one({'email': data['email']}) is None) or (students.find_one({"email": data['email']}, {'address': 1}) is None): #problem otan den yparxei to address key
+    if (students.find_one({'email': data['email']}) is None) or (len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0):
         return Response("Student or address not found", status=400, mimetype='application/json')
     else:
+        # student_in_db_name = str(students.find_one({'email': data['email']}, {'_id': 0, 'name': 1}))
+        # student_in_db_street = str(students.find_one({'email': data['email']}, {'_id': 0, 'address.street': 1}))
+        # student_in_db_postcode = str(students.find_one({'email': data['email']}, {'_id': 0, 'address.postcode': 1}))
+        # student = {"name": student_in_db_name, "street": student_in_db_street, "postcode": student_in_db_postcode}
+
         student = students.find_one({'email': data['email']},
                                     {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
-        return Response(json.dumps(student), status=200, mimetype='application/json')
 
-    # Η παρακάτω εντολή χρησιμοποιείται μόνο σε περίπτωση επιτυχούς αναζήτησης φοιτητή (υπάρχει ο φοιτητής και έχει δηλωμένη κατοικία).
-    # return Response(json.dumps(student), status=200, mimetype='application/json')
-    # return Response(json.dumps(serialize_student(student)), status=200, mimetype='application/json')
+        # student_in_db = students.find_one({'email': data['email']}, {'_id': 0})
+        # student= {"name": student_in_db['name'], "street": student_in_db['address.street'], "postcode": student_in_db['address.postcode']}
+        return Response(json.dumps(student), status=200, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 7: Διαγραφή φοιτητή βάσει email
@@ -290,11 +294,15 @@ def delete_student():
         return Response(msg, status=200, mimetype='application/json')
     else:
         msg = "Student was not found"
-        return Response(msg, status=200, mimetype='application/json')
+        return Response(msg, status=400, mimetype='application/json')
 
 # ΕΡΩΤΗΜΑ 8: Εισαγωγή μαθημάτων σε φοιτητή βάσει email
 @app.route('/addCourses', methods=['PATCH'])
 def add_courses():
+    # uuid = request.headers.get('authorization')
+    # if not is_session_valid(uuid):
+    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+
     # Request JSON data
     data = None
     try:
@@ -330,6 +338,15 @@ def add_courses():
         * Το νέο αυτό key θα πρέπει να είναι μία λίστα από dictionary.
         * Αν δε βρεθεί φοιτητής με αυτό το email να επιστρέφεται μήνυμα λάθους. 
     """
+    if students.find_one({'email': data['email']}):
+        student = students.find_one({'email': data['email']})
+        msg = (str(student['name']), " was deleted")
+        students.delete_one({'email': data['email']})
+        return Response(msg, status=200, mimetype='application/json')
+    else:
+        msg = "Student was not found"
+        return Response(msg, status=400, mimetype='application/json')
+
 
     return Response(msg, status=200, mimetype='application/json')
 
