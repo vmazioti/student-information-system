@@ -299,9 +299,9 @@ def delete_student():
 # ΕΡΩΤΗΜΑ 8: Εισαγωγή μαθημάτων σε φοιτητή βάσει email
 @app.route('/addCourses', methods=['PATCH'])
 def add_courses():
-    # uuid = request.headers.get('authorization')
-    # if not is_session_valid(uuid):
-    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
 
     # Request JSON data
     data = None
@@ -340,15 +340,13 @@ def add_courses():
     """
     if students.find_one({'email': data['email']}):
         student = students.find_one({'email': data['email']})
-        msg = (str(student['name']), " was deleted")
-        students.delete_one({'email': data['email']})
+        students.update_one({'email': data['email']}, {"$set": {"courses": data['courses']}})
+        msg = ("Courses were added to ", str(student['name']))
         return Response(msg, status=200, mimetype='application/json')
     else:
         msg = "Student was not found"
         return Response(msg, status=400, mimetype='application/json')
 
-
-    return Response(msg, status=200, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 9: Επιστροφή περασμένων μαθημάτων φοιτητή βάσει email
