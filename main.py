@@ -30,6 +30,15 @@ def create_session(username):
 def is_session_valid(user_uuid):
     return user_uuid in users_sessions
 
+
+def failed_courses(course):
+    for key, value in course.items():
+        if value < 5:
+            return True
+        else:
+            return False
+
+
 # ΕΡΩΤΗΜΑ 1: Δημιουργία χρήστη
 @app.route('/createUser', methods=['POST'])
 def create_user():
@@ -118,7 +127,7 @@ def get_student():
     if not is_session_valid(uuid):
         return Response("User is not authenticated", status=401, mimetype='application/json')
 
-    #Request JSON data
+    # Request JSON data
     data = None
     try:
         data = json.loads(request.data)
@@ -232,7 +241,8 @@ def get_student_address():
         Το student{} να είναι της μορφής: 
         student = {"name": "Student's name", "street": "The street where the student lives", "postcode": 11111}
     """
-    if (students.find_one({'email': data['email']}) is None) or (len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0):
+    if (students.find_one({'email': data['email']}) is None) or (
+            len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0):
         return Response("Student or address not found", status=400, mimetype='application/json')
     else:
         # student_in_db_name = str(students.find_one({'email': data['email']}, {'_id': 0, 'name': 1}))
@@ -240,15 +250,11 @@ def get_student_address():
         # student_in_db_postcode = str(students.find_one({'email': data['email']}, {'_id': 0, 'address.postcode': 1}))
         # student = {"name": student_in_db_name, "street": student_in_db_street, "postcode": student_in_db_postcode}
 
-        student = students.find_one({'email': data['email']},
-                                    {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
-        student_response = {}
-        student_response['name'] = student['name']
-        student_response['street'] = student['address'][0]['street']
-        student_response['postcode'] = student['address'][0]['postcode']
-        # student_in_db = students.find_one({'email': data['email']}, {'_id': 0})
-        # student= {"name": student_in_db['name'], "street": student_in_db['address.street'], "postcode": student_in_db['address.postcode']}
-        return Response(json.dumps(student_response), status=200, mimetype='application/json')
+        student_search = students.find_one({'email': data['email']},
+                                           {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
+        student = {'name': student_search['name'], 'street': student_search['address'][0]['street'],
+                   'postcode': student_search['address'][0]['postcode']}
+        return Response(json.dumps(student), status=200, mimetype='application/json')
 
 
 # ΕΡΩΤΗΜΑ 7: Διαγραφή φοιτητή βάσει email
@@ -293,12 +299,13 @@ def delete_student():
         msg = "Student was not found"
         return Response(msg, status=400, mimetype='application/json')
 
+
 # ΕΡΩΤΗΜΑ 8: Εισαγωγή μαθημάτων σε φοιτητή βάσει email
 @app.route('/addCourses', methods=['PATCH'])
 def add_courses():
-    uuid = request.headers.get('authorization')
-    if not is_session_valid(uuid):
-        return Response("User is not authenticated", status=401, mimetype='application/json')
+    # uuid = request.headers.get('authorization')
+    # if not is_session_valid(uuid):
+    #     return Response("User is not authenticated", status=401, mimetype='application/json')
 
     # Request JSON data
     data = None
@@ -345,7 +352,6 @@ def add_courses():
         return Response(msg, status=400, mimetype='application/json')
 
 
-
 # ΕΡΩΤΗΜΑ 9: Επιστροφή περασμένων μαθημάτων φοιτητή βάσει email
 @app.route('/getPassedCourses', methods=['GET'])
 def get_courses():
@@ -370,7 +376,7 @@ def get_courses():
         Για τον έλεγχο του uuid να καλεστεί η συνάρτηση is_session_valid() (!!! Η ΣΥΝΑΡΤΗΣΗ is_session_valid() ΕΙΝΑΙ ΗΔΗ ΥΛΟΠΟΙΗΜΕΝΗ) με παράμετρο το uuid. 
             * Αν η συνάρτηση επιστρέψει False ο χρήστης δεν έχει αυθεντικοποιηθεί. Σε αυτή τη περίπτωση να επιστρέφεται ανάλογο μήνυμα με response code 401. 
             * Αν η συνάρτηση επιστρέψει True, ο χρήστης έχει αυθεντικοποιηθεί. 
-
+             
         Το συγκεκριμένο endpoint θα δέχεται σαν argument το email του φοιτητή.
         * Στη περίπτωση που ο φοιτητής έχει βαθμολογία σε κάποια μαθήματα, θα πρέπει να επιστρέφεται το όνομά του (name) καθώς και τα μαθήματα που έχει πέρασει.
         * Στη περίπτωη που είτε ο φοιτητής δεν περάσει κάποιο μάθημα, είτε δεν υπάρχει φοιτητής με αυτό το email στο σύστημα, να επιστρέφεται μήνυμα λάθους.
@@ -378,15 +384,22 @@ def get_courses():
         Αν υπάρχει όντως ο φοιτητής με βαθμολογίες σε κάποια μαθήματα, να περάσετε τα δεδομένα του σε ένα dictionary που θα ονομάζεται student.
         Το dictionary student θα πρέπει να είναι της μορφής: student = {"course name 1": X1, "course name 2": X2, ...}, όπου X1, X2, ... οι βαθμολογίες (integer) των μαθημάτων στα αντίστοιχα μαθήματα.
     """
-    student = students.find_one({'email': data['email']})
-    if (len(student) != 0) and (len(students.find_one({"email": data['email']}, {'_id': 0, 'courses': 1})) !=0):
-        print(student)
-        return Response(json.dumps(student), status=200, mimetype='application/json')
+    student_search = students.find_one({'email': data['email']}, {'_id': 0})
+    if (len(student_search) > 0) and (len(students.find_one({"email": data['email']}, {'_id': 0, 'courses': 1})) > 0):
+        courses = student_search['courses']
+        failed = list(filter(failed_courses, courses))
+        if len(failed) > 0:
+            msg = "Passed courses not found"
+            return Response(msg, status=400, mimetype='application/json')
+        else:
+            student_list = []
+            for item in range(len(courses)):
+                student_list.append(courses[item])
+
+            return Response(json.dumps(student_list), status=200, mimetype='application/json')
     else:
-        msg = "Student or passed courses not found"
+        msg = "Student or courses not found"
         return Response(msg, status=400, mimetype='application/json')
-    # Η παρακάτω εντολή χρησιμοποιείται μόνο σε περίπτωση επιτυχούς αναζήτησης φοιτητή (υπάρχει ο φοιτητής και έχει βαθμολογίες στο όνομά του).
-    #return Response(json.dumps(student), status=200, mimetype='application/json')
 
 
 # Εκτέλεση flask service σε debug mode, στην port 5000.
