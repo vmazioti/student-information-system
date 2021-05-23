@@ -17,6 +17,8 @@
   ![](images/image3.jpg)
   
  ## 1. Ερώτημα 1
+ 
+ ![](images/q1.jpg)
   
   #### username_from_request = data['username']
   Δημιούργησα μια μεταβλητή με όνομα username_from_request στην οποία θα αποθηκεύεται το username που λαμβάνουμε από τον χρήστη. 
@@ -38,6 +40,8 @@
   
   ## 2. Ερώτημα 2 
   
+  ![](images/q2.jpg)
+  
   #### if (users.find({'username': data['username']}).count() != 0) and (users.find({'password': data['password']}).count() != 0)
   Ελέγχει αν υπάρχει user με αυτόν τον συνδυασμό username και password
   
@@ -55,6 +59,9 @@
   
   ## 3. Ερώτημα 3
   
+  ![](images/q3_a.jpg)
+  ![](images/q3_b.jpg)
+  
   #### uuid = request.headers.get('authorization')
   ####  if not is_session_valid(uuid):
   ####      return Response("User is not authenticated", status=401, mimetype='application/json')
@@ -71,6 +78,8 @@
   
   ### 4. Ερώτημα 4 
   
+  ![](images/q4.jpg)
+  
   Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
   
   #### students_thirty = list(students.find({'yearOfBirth': {"$eq": 1991}}, {'_id': 0}))
@@ -84,6 +93,8 @@
   
   ### 5. Ερώτημα 5 
   
+  ![](images/q5.jpg)
+  
   Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
   
   #### students_thirty = list(students.find({'yearOfBirth': {"$lte": 1991}}, {'_id': 0}))
@@ -91,6 +102,8 @@
   
   ### 6. Ερώτημα 6
   
+  ![](images/q6.jpg)
+   
   Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
   
   #### if (students.find_one({'email': data['email']}) is None) or (len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0)
@@ -100,6 +113,8 @@
   Διαφορετικά, αποθηκεύει στην μεταβλητή students το dictionary που περιέχει το ονομα και τη διεύεθυνση του φοιτητή.
   
   ### 7. Ερώτημα 7
+  
+  ![](images/q7.jpg)
   
   Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
   
@@ -120,6 +135,8 @@
   
   ### 8. Ερώτημα 8
   
+  ![](images/q8.jpg)
+  
   Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
   
   
@@ -137,6 +154,8 @@
   #### msg = "Student was not found"
   
    ### 9. Ερώτημα 9
+   
+   ![](images/q9.jpg)
    
    Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
    
