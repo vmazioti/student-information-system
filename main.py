@@ -211,9 +211,9 @@ def get_students_oldies():
 # ΕΡΩΤΗΜΑ 6: Επιστροφή φοιτητή που έχει δηλώσει κατοικία βάσει email
 @app.route('/getStudentAddress', methods=['GET'])
 def get_student_address():
-    # uuid = request.headers.get('authorization')
-    # if not is_session_valid(uuid):
-    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
 
     # Request JSON data
     data = None
@@ -245,11 +245,6 @@ def get_student_address():
             len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0):
         return Response("Student or address not found", status=400, mimetype='application/json')
     else:
-        # student_in_db_name = str(students.find_one({'email': data['email']}, {'_id': 0, 'name': 1}))
-        # student_in_db_street = str(students.find_one({'email': data['email']}, {'_id': 0, 'address.street': 1}))
-        # student_in_db_postcode = str(students.find_one({'email': data['email']}, {'_id': 0, 'address.postcode': 1}))
-        # student = {"name": student_in_db_name, "street": student_in_db_street, "postcode": student_in_db_postcode}
-
         student_search = students.find_one({'email': data['email']},
                                            {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
         student = {'name': student_search['name'], 'street': student_search['address'][0]['street'],
@@ -303,9 +298,9 @@ def delete_student():
 # ΕΡΩΤΗΜΑ 8: Εισαγωγή μαθημάτων σε φοιτητή βάσει email
 @app.route('/addCourses', methods=['PATCH'])
 def add_courses():
-    # uuid = request.headers.get('authorization')
-    # if not is_session_valid(uuid):
-    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
 
     # Request JSON data
     data = None
@@ -355,9 +350,9 @@ def add_courses():
 # ΕΡΩΤΗΜΑ 9: Επιστροφή περασμένων μαθημάτων φοιτητή βάσει email
 @app.route('/getPassedCourses', methods=['GET'])
 def get_courses():
-    # uuid = request.headers.get('authorization')
-    # if not is_session_valid(uuid):
-    #     return Response("User is not authenticated", status=401, mimetype='application/json')
+    uuid = request.headers.get('authorization')
+    if not is_session_valid(uuid):
+        return Response("User is not authenticated", status=401, mimetype='application/json')
 
     # Request JSON data
     data = None
