@@ -387,11 +387,11 @@ def get_courses():
             msg = "Passed courses not found"
             return Response(msg, status=400, mimetype='application/json')
         else:
-            student_list = []
+            student = []
             for item in range(len(courses)):
-                student_list.append(courses[item])
+                student.append(courses[item])
 
-            return Response(json.dumps(student_list), status=200, mimetype='application/json')
+            return Response(json.dumps(student), status=200, mimetype='application/json')
     else:
         msg = "Student or courses not found"
         return Response(msg, status=400, mimetype='application/json')
