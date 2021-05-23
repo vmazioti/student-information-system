@@ -35,5 +35,105 @@
   
   #### return Response("A user with the given username already exists",status=500, mimetype='application/json')
   Προστέθηκε το status=500 για να δηλωθεί ότι το request δεν εκτελέστηκε με επιτυχία.
-    
+  
+  ## 2. Ερώτημα 2 
+  
+  #### if (users.find({'username': data['username']}).count() != 0) and (users.find({'password': data['password']}).count() != 0)
+  Ελέγχει αν υπάρχει user με αυτόν τον συνδυασμό username και password
+  
+  #### user_uuid = create_session(data['username']
+  Αν υπάρχει, καλεί την συνάρτηση create_session με είσοδο το username του χρήστη και δημιουργεί το uuid
+  
+  #### res = {"uuid": user_uuid, "username": data['username']}
+  Αποθηκεύει το uuid και το username σε ένα dictionary
+  
+  #### return Response(json.dumps(res), status=200, mimetype='application/json')
+  Το οποίο περνάει από την jdon.dumps για να γίνει string και να εμφανιστεί στον χρήστη. Εδώ προστέθηκε το status 200 για να δηλώσει την επιτυχή αυθεντικοποίηση
+  
+  #### return Response("Wrong username or password.", status=400, mimetype='application/json')
+  Σε περίπτωση ανεπιτυχούς αυθεντοκοποίησης, γυρίζει status 400
+  
+  ## 3. Ερώτημα 3
+  
+  #### uuid = request.headers.get('authorization')
+  ####  if not is_session_valid(uuid):
+  ####      return Response("User is not authenticated", status=401, mimetype='application/json')
+  Ο χρήστης δίνει στα headers το uuid που έχει δημιουργηθεί στο προηγούμενο ερώτημα. Καλείται η is_session_valid με είσοδο το uuid του χρήστη και εαν δεν επιστρέψει κάτι, σημαίνει ότι ο χρήστης δεν έχει αυθεντικοποιηθεί και εμφανίζεται μήνυμα λάθους. Διαφορετικά συνεχίζει.
+  
+  #### student = students.find_one({'email': data['email']}, {'_id': 0}
+  Ψάχνει για τον φοιτητή με το email που έχει περάσει ο χρήστης στο body του request, και τον αποθηκεύει στην μεταβλητή student χωρίς όμως να επιστρέφει το id του, γιατί έβγαζε error η json.dumps επειδη ο τύπος του _id είναι object id.
+  
+  ####     if student is not None:
+  ####      return Response(json.dumps(student), status=200, mimetype='application/json')
+  ####  else:
+  ####      return Response("Student not found", status=400, mimetype='application/json')
+  Αν η μεταβλητή student δεν είναι κενή, τότε επιστρέφει τον φοιτητή. Αν είναι κενή, τότε σημαίνει ότι δεν έχει βρεθέι φοιτητής και επιστρέφει μήνυμα λάθους.
+  
+  ### 4. Ερώτημα 4 
+  
+  Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
+  
+  #### students_thirty = list(students.find({'yearOfBirth': {"$eq": 1991}}, {'_id': 0}))
+  Ονόμασα τη λίστα students_thirty γιατι το students εβγαζε error λόγω του ότι και το collection εχει το ίδιο όνομα. Εδώ βρίσκει όλους τους φοιτητές που είναι γεννημένοι το 1991, δλαδή είναι 30 χρονών και τους αποθηκεύει σε λίστα.
+  
+ ####   if students_thirty:
+ ####       return Response(json.dumps(students_thirty), status=200, mimetype='application/json')
+ ####   else:
+ ####       return Response("Students not found", status=400, mimetype='application/json')
+ Αν η λίστα δεν είναι κενή, την επιστρέφει στον χρήστη. Αν είναι κενή εμφανίζει μήνυμα λάθους.
+  
+  ### 5. Ερώτημα 5 
+  
+  Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
+  
+  #### students_thirty = list(students.find({'yearOfBirth': {"$lte": 1991}}, {'_id': 0}))
+  Με τον ίδιο ακριβώς τρόπο όπως στο προηγούμενο ερώτημα με τη διαφορά ότι ψάχνει για φοιτητές που η χρονιά γέννησής τους είναι μικρότερη ή ίση με το 1991.
+  
+  ### 6. Ερώτημα 6
+  
+  Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
+  
+  #### if (students.find_one({'email': data['email']}) is None) or (len(students.find_one({"email": data['email']}, {'_id': 0, 'address': 1})) == 0)
+  Ελέγχει αν δεν υπάρχει φοιτητής με το email που έχουμε δώσει ή αν δεν έχει δηλώσει διεύθυνση κατοινίας, δηλαδή το key addresss είναι κενό. Σε αυτήν την περίπτωση, εμφανίζει μήνυμα λάθους.
+  
+  #### student = students.find_one({'email': data['email']}, {'_id': 0, 'name': 1, 'address.street': 1, 'address.postcode': 1})
+  Διαφορετικά, αποθηκεύει στην μεταβλητή students το dictionary που περιέχει το ονομα και τη διεύεθυνση του φοιτητή.
+  
+  ### 7. Ερώτημα 7
+  
+  Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
+  
+  #### if students.find_one({'email': data['email']})
+  Ψάχνει τον φοιτητή με βάση το email του και αν τον βρει 
+  
+  #### student = students.find_one({'email': data['email']})
+  Αποθηκεύει τα δεδομένα του στην μεταβλήτη student η οποία είναι dictionary αφού η find_one επιστρέφει dictionary.
+  
+  #### msg = (str(student['name']), " was deleted")
+  Το μήνυμα που θα εμφανιστεί μετά την ολοκλήρωση της διαγραφής του φοιτητή.
+  
+  #### students.delete_one({'email': data['email']})
+  Διαγράφει τον φοιτητή με βάση το email που έχουμε εισάγει
+  
+  #### msg = "Student was not found"
+  Διαφορετικά, αν δεν βρει τον φοιτητή, εμφανίζει μήνυμα αποτυχίας.
+  
+  ### 8. Ερώτημα 8
+  
+  Η αυθεντικοποίηση γίνεται με τον ίδιο τρόπο.
+  
+  
+  ####     if students.find_one({'email': data['email']}):
+  ####      student = students.find_one({'email': data['email']})
+  Ψάχνει να βρει τον φοιτητή με βάση το email που δώσαμε. Αν τον βρει, αποθηκεύει τα δεδομάνα του στην μεταβλητή student.
+  
+  #### students.update_one({'email': data['email']}, {"$set": {"courses": data['courses']}})
+  Προσθέτει στα δεδομένα του φοιτητή τη λίστα με dictionaries που έχουμε δώσει ως είσοδο. Ο τελεστής $set δημιουργεί το key αν δεν υπάρχει ήδη. Αν υπήρχε το key, θα το έκανε update με τα νέα δεδομένα που θα είχαμε δώσει. 
+  
+  #### msg = ("Courses were added to ", str(student['name']))
+  Το μήμυμα που θα επιστραφεί σε περίπτωση επιτυχίας.
+  
+  Σε διαφορετική περίπτωση, δηλαδή αν δεν βρεθεί ο φοιτητής, θα εμφανιστεί το παρακάτω μήνυμα.
+  #### msg = "Student was not found"
+  
   
